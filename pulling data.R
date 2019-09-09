@@ -5,6 +5,7 @@ setwd("C:/Users/583413/Documents/GitHub/rtwitter-viz")
 library(rtweet)
 library(tidytext)
 library(tm)
+library(data.table)
 
 #load keys in a seperate file--put this in the git ignore so that you arent publishing your API access
 source("keys.R")
@@ -20,8 +21,14 @@ twitter_token <- create_token(
 
 cnn = get_timeline("cnn", n =100)
 
-cnn_text <- cnn$text
-cnn_corp = Corpus(VectorSource(cnn_text))
+# cnn_text <- cnn$text
+# cnn_corp = Corpus(VectorSource(cnn_text))
+# 
+# 
+# cnn_small = cnn%>%select(text)
+# cnn_tidy = cnn_small %>% unnest_tokens(word, text)
+# 
+# gsub(stop_words$word, "", cnn$text)
 
 #due to the structure of tm's corprus, print wont show much. Instead use inspect:
 inspect(cnn_corp)
@@ -37,6 +44,9 @@ cnn_corp <- tm_map(cnn_corp, function(x)removeWords(x,stopwords()))
 removeURL <- function(x) gsub("http[[:alnum:]]*", "", x)
 cnn_corp <- tm_map(cnn_corp, content_transformer(removeURL))
 
+# remove extra whitespaces
+cnn_corp <- tm_map(cnn_corp, content_transformer(stripWhitespace))
+
 inspect(cnn_corp)
 
 #### frequency of words
@@ -45,4 +55,17 @@ cnn_terms_count = sort(rowSums(as.matrix(cnn_terms)), decreasing = T)
 head(cnn_terms_count)
 
 # the thurst of sentiment analysis is the delta between positive and negative words in text
-nrc = get_sentiments("nrc") # this dictionary maps sentiment scores to words
+afinn = get_sentiments("afinn") # this dictionary maps sentiment scores to words
+
+cnn_df <-data.frame(text=sapply(cnn_corp, identity), 
+                       stringsAsFactors=F)
+
+cnn_df = cnn_df%>%unnest_tokens(word, text)
+cnn_df$linenumber = gsub('\\..*', '', row.names(cnn_df)%>%as.numeric())
+
+test <- cnn_df %>% 
+  left_join(get_sentiments("afinn")) %>% 
+  group_by(linenumber) %>% 
+  summarise(sentiment = sum(value)) %>% 
+  mutate(method = "AFINN")
+
