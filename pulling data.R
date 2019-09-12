@@ -6,9 +6,26 @@ library(rtweet)
 library(tidytext)
 library(tm)
 library(data.table)
+library(twitteR)
 
 #load keys in a seperate file--put this in the git ignore so that you arent publishing your API access
 source("keys.R")
+
+setup_twitter_oauth(
+  consumer_key = app_details$con_key,
+  consumer_secret = app_details$con_secret,
+  access_token = app_details$access_key,
+  access_secret = app_details$access_secret
+)
+
+searchTwitter("#trump", n =1)
+mw = userTimeline("marwilliamson", n = 500, excludeReplies = T)
+mw = twitteR::twListToDF(mw)
+
+a2 = userTimeline("realDonaldTrump", n = 500)
+b2 = twitteR::twListToDF(a2)
+
+
 
 #create the token
 twitter_token <- create_token(
@@ -19,53 +36,13 @@ twitter_token <- create_token(
   access_secret = app_details$access_secret
 )
 
-cnn = get_timeline("cnn", n =100)
+#antonio brown
+ab = get_timeline("AB84", n =3200)
+fwrite(ab, "ab.csv")
 
-# cnn_text <- cnn$text
-# cnn_corp = Corpus(VectorSource(cnn_text))
-# 
-# 
-# cnn_small = cnn%>%select(text)
-# cnn_tidy = cnn_small %>% unnest_tokens(word, text)
-# 
-# gsub(stop_words$word, "", cnn$text)
+#trump
+trump2 = get_timeline("realDonaldTrump", n=3200)
+fwrite(trump2, "trump.csv")
 
-#due to the structure of tm's corprus, print wont show much. Instead use inspect:
-inspect(cnn_corp)
-
-# now we begin cleaning the corpus into a machine readible format
-cnn_corp = tm_map(cnn_corp, removePunctuation) # remove punctuation
-cnn_corp <- tm_map(cnn_corp, content_transformer(tolower)) # lower case
-
-#lets remove stop words
-cnn_corp <- tm_map(cnn_corp, function(x)removeWords(x,stopwords()))
-
-#lets also remove hyperlinks
-removeURL <- function(x) gsub("http[[:alnum:]]*", "", x)
-cnn_corp <- tm_map(cnn_corp, content_transformer(removeURL))
-
-# remove extra whitespaces
-cnn_corp <- tm_map(cnn_corp, content_transformer(stripWhitespace))
-
-inspect(cnn_corp)
-
-#### frequency of words
-cnn_terms = TermDocumentMatrix(cnn_corp)
-cnn_terms_count = sort(rowSums(as.matrix(cnn_terms)), decreasing = T)
-head(cnn_terms_count)
-
-# the thurst of sentiment analysis is the delta between positive and negative words in text
-afinn = get_sentiments("afinn") # this dictionary maps sentiment scores to words
-
-cnn_df <-data.frame(text=sapply(cnn_corp, identity), 
-                       stringsAsFactors=F)
-
-cnn_df = cnn_df%>%unnest_tokens(word, text)
-cnn_df$linenumber = gsub('\\..*', '', row.names(cnn_df)%>%as.numeric())
-
-test <- cnn_df %>% 
-  left_join(get_sentiments("afinn")) %>% 
-  group_by(linenumber) %>% 
-  summarise(sentiment = sum(value)) %>% 
-  mutate(method = "AFINN")
-
+trump2 = get_timeline("cnn", n=3200)
+fwrite(cnn, "cnn.csv")
