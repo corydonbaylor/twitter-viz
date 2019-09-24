@@ -1,5 +1,12 @@
+setwd("C:/Users/583413/Documents/GitHub/twitter-viz")
+library(tidytext)
+library(dplyr)
+library(ggplot2)
+library(lubridate)
 
-trumps = trump2%>%select(text, created_at, favorite_count, retweet_count)%>%
+trump = read.csv("data/trump.csv")
+
+trumps = trump%>%select(text, created_at, favorite_count, retweet_count)%>%
   mutate(created_at = ymd_hms(created_at))%>%
   filter(created_at > "2019-07-31",
          created_at < "2019-09-01")%>%
@@ -24,7 +31,31 @@ trump_sent = trump_text%>%anti_join(stop_words)%>% #removes common words (stop w
 write.csv(trump_sent, "trump_sent.csv")
 
 trump_month = trump_sent%>%group_by(date)%>%
-  summarise(sentiment = sum(sentiment, na.rm =T))
+  summarise(sentiment = sum(sentiment, na.rm =T))%>%
+  mutate(weekday =  
+         factor(wday(trump_month$date), labels = c("Sun", "Mon", "Tues", "Wed", "Thu", "Fri", "Sat"))
+         
+         )%>%
+  mutate(day = day(date))%>%
+  mutate(weeknum = isoweek(trump_month$date))%>% 
+  mutate(weeknum = ifelse(weekday == "Sun", weeknum +1, weeknum))%>% #iso says that monday is the first day of the week but we want sunday to be the first day
+  mutate(weeknum = factor(weeknum, rev(unique(trump_month$weeknum)), ordered = T) # we want the earlier weeks at the top of the calendar
+)
+
+trump_month
+
+# creating plot 
+
+ggplot(trump_month, aes(x= weekday, y =weeknum, fill = sentiment))+
+  geom_tile(color = "#323232")+
+  geom_text(label = trump_month$day, size =3, color = "black")+
+  scale_fill_gradient2(midpoint = 0, low = "#d2222d", mid = "white", high = "#238823")+
+  #we are going to remove the majority of the plot 
+  theme(axis.title = element_blank(),
+        panel.background = element_blank(),
+        axis.ticks = element_blank(),
+        axis.text.y = element_blank()
+        )
 
 #first we need to tokenize the tweets
 ab_text = ab%>%select(text)%>%
