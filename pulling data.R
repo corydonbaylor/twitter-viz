@@ -48,4 +48,4 @@ fwrite(ab, "ab.csv")
 trump = get_timeline("realDonaldTrump", n=3200)
 fwrite(trump2, "trump.csv")
 
-
+# after looking at the tweets, lets stick to using trumps!
