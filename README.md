@@ -28,9 +28,7 @@ If you are working with git, I would suggest saving your keys in a seperate file
 
 Once you have authorized yourself, getting the actual data will be very simple. You can look up tweets by subject or by hashtag amoung a large list of other things, but I wanted to see how happy the days were for a particular user. 
 
-I originally wanted to measure how positive or negative the news was by day for a month, so I pulled the max number of tweets (3,200) for CNN. Unfortunately, this resulted in pulling back about a week and a half of tweets. It appears that CNN--and every other news organization I looked into--simply tweets too much. You can get more tweets with a premium account, but I do not have that and also do not want to pay for it. 
-
-So the hunt was on. I needed someone who tweets at least once a day but no more than ten times a day. Someone who has expressive but simple tweets that would be easy to analyze with an algorhtm. I wanted someone well known with tweets that we interesting to read. I tried Kayne West and Antonio Brown--both of whom were well known for social media miscues, but they did not tweet enough. I tried a few presidential candidates, but their tweets appear to be managed by teams and are not expressive and interesting to read. 
+I needed someone who tweets at least once a day but no more than ten times a day. Someone who has expressive but simple tweets that would be easy to analyze with an algorithm. I wanted someone well known with tweets that we interesting to read. I tried Kayne West and Antonio Brown--both of whom were well known for social media miscues, but they did not tweet enough. I tried a few presidential candidates, but their tweets appear to be managed by teams and are not expressive and interesting to read. 
 
 Eventually I landed where I knew that I was going to land but really didnt want to land--with Donald Trump. The reason I did not want to use Trump's twitter is because I did not want this project to be viewed through a political lense, which is obviously inescapable with Trump. But do to the nature of his tweets and golden zone frequency of his tweeting, I realized that his twitter is the obvious choice for an analysis such as this. 
 
@@ -48,3 +46,21 @@ fwrite(ab, "ab.csv")
 trump = get_timeline("realDonaldTrump", n=3200)
 fwrite(trump2, "trump.csv")
 ```
+### Sentiment Analysis i.e. Counting Happy Words
+Sentiment analysis sounds very advanced, but at its heart, its really just about counting up positive and negative words and assuming a positive value means a positive sentiment. 
+
+So how do we go about doing this? Step one, as with any analysis is getting the data in the right format. We need to do something called tokenizing. Tokenizing breaks a large string--in this case a tweet-- into its essential elements--in this case words. But tokens do not need to be words. They can be words, phrases, or even whole sentences. But for now, lets stick with words. 
+
+We are going to be using the tidytext package for sentiment analysis. I think its easier to work in dataframes instead of corpuses like "tm" does. Tidytext fits in nicely with other tidyverse packages making it a no brainer for me.
+
+One more thing to note. We need to keep track of what tweet each token belongs to, that way we can get the sentiment for the tweet overall. 
+```
+# we need to tokenize the text (make each line a word while retaining which tweet it comes from)
+trump_text = trumps%>%select(text)%>%
+  mutate(text = gsub(" ?(f|ht)(tp)(s?)(://)(.*)[.|/](.*)", "", trumps$text),
+         linenumber = row_number())%>% #this allows us to retain the row number/the tweet
+  unnest_tokens(word, text) # this unnests the tweets into words
+ ```
+ After tokenizing using tidytext, each row will be a word and there will be a variable for line numbers as well.  
+ 
+ Next, using dplyr we will remove 
