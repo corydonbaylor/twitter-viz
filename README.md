@@ -82,3 +82,23 @@ trump_sent = trump_text%>%anti_join(stop_words)%>% #removes common words (stop w
   mutate(date = substr(created_at, 1,10))
  ```
  And with that we now have the sentiment score for each of Trumps tweets!
+
+### Making a heatmap calendar
+I wanted to make a somewhat obscure visualization for this dataset. Its time series data techinically but I didn't want a line graph because those can be a bit boring. Instead, I wanted a cleaner version of the little heatmap that shows up for commits under github. 
+
+To do this, I used the geom_tile from ggplot2. The rows would be weeks and the columns would be the day of the week--just like any other calendar. Doing this was a little harder than I orginally imagined, though as always with coding once you have the actual code it looks quite easy. Using lubridate, you can get the day of the week using the "wday()" command. And you can get the week number--ie how many weeks have passed this year--using the "isoweek()" command. 
+
+The issue is that isoweeks start on Monday not Sunday, so you will have to use an ifelse statement to move Sundays up a week. The last issue with this is geom_tile will display the earlier weeks at the bottom of the plot--as one would expect with a bar graph--instead of at the top--as one would expect with a calendar. So you will need to set the weeks as reverse the weeks and set them as an ordered factor. Take a look at the code below:
+```
+trump_month = trump_sent%>%group_by(date)%>%
+  summarise(sentiment = sum(sentiment, na.rm =T))%>%
+  # to create the plot we need to be able to organzie with days as the columns and week number as the rows
+  mutate(weekday =  
+         factor(wday(date), labels = c("Sun", "Mon", "Tues", "Wed", "Thu", "Fri", "Sat"))
+         )%>% # this gives us an order factor variable for days
+  mutate(day = day(date))%>% # we will use this to write in the date on the squares
+  mutate(weeknum = isoweek(date))%>% # what number week it is--allows us to group days into weeks
+  mutate(weeknum = ifelse(weekday == "Sun", weeknum +1, weeknum))%>% # iso says that monday is the first day of the week but we want     sunday to be the first day
+  mutate(weeknum = factor(weeknum, rev(unique(weeknum)), ordered = T) # we want the earlier weeks at the top of the calendar
+)
+```
