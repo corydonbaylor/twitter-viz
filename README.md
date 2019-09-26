@@ -102,3 +102,24 @@ trump_month = trump_sent%>%group_by(date)%>%
   mutate(weeknum = factor(weeknum, rev(unique(weeknum)), ordered = T) # we want the earlier weeks at the top of the calendar
 )
 ```
+Finally we just need to make the actual visualization. This is the easy part (thankfully). 
+```
+ggplot(trump_month, aes(x= weekday, y =weeknum, fill = sentiment))+ 
+  geom_tile(color = "#323232")+ # makes the lines a bit more muted
+  geom_text(label = trump_month$day, size =4, color = "black")+ # days
+  # positive days should be green and negative ones should be red
+  scale_fill_gradient2(midpoint = 0, low = "#d2222d", mid = "white", high = "#238823")+ 
+  # we are going to remove the majority of the plot 
+  theme(axis.title = element_blank(),
+        panel.background = element_blank(),
+        axis.ticks = element_blank(),
+        axis.text.y = element_blank(),
+        legend.text = element_blank(),
+        legend.position = "none",
+        plot.title = element_text(face = "bold"),
+        plot.caption = element_text(color = "#323232")
+        )+
+  labs(title = "This August in Tweets", 
+       subtitle = "A Sentiment Analysis of President Trump's Tweets",
+       caption = "Darker Green = More Positive\nDarker Red = More Negative")
+```
