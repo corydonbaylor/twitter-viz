@@ -63,4 +63,8 @@ trump_text = trumps%>%select(text)%>%
  ```
  After tokenizing using tidytext, each row will be a word and there will be a variable for line numbers as well.  
  
- Next, using dplyr we will remove 
+Next, using dplyr we will remove "stop words". Stop words are words with very little or no semantic meaning--think words like "the", "as" or "of". I think a better name for them would have been "helper words" since they primarily serve to connect meaningful words together as their purpose more closely aligns to grammar than vocabulary in my opinion. However, to remove them, we use an anti-join. 
+```
+trump_text%>%anti_join(stop_words)
+```
+
