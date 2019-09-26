@@ -6,6 +6,10 @@ The Happy Days theme song, while wonderful, does not answer the important questi
 
 Enter R and the rtweets and tidytext packages. For this project, I am going to first scrape twitter data using the rtweets and then perform a basic sentiment analysis using the tidytext package. 
 
+Let's take a look a the final product:
+![alt text](https://github.com/corydonbaylor/twitter-viz/blob/master/Rplot.png?raw=true)
+
+
 ### Scraping the data
 The rtweets package makes getting twitter data shockingly easy. Both the api call and response are largely abstracted away. All it takes is a single line of code to get a tidy dataframe of twitter data. But before we can do that, we need to set up access to use twitters API. I believe that how we do this is best captured on twitters on website rather than here. But essentially, you need a twitter account and the ability to answer a few simple questions. 
 
@@ -102,7 +106,9 @@ trump_month = trump_sent%>%group_by(date)%>%
   mutate(weeknum = factor(weeknum, rev(unique(weeknum)), ordered = T) # we want the earlier weeks at the top of the calendar
 )
 ```
-Finally we just need to make the actual visualization. This is the easy part (thankfully). 
+Finally we just need to make the actual visualization. This is the easy part (thankfully). All we are going here is setting the x and y for tiles, adding text (the date) to appear within the tiles and removing extra things like gridlines and the legend. 
+
+One little trick, that I didn't think was readily apparent, was to use scale_fill_gradient2 to make a diverging color scale centered around 0. Other than that, the inline comments should provide enough context to what was going on here.  
 ```
 ggplot(trump_month, aes(x= weekday, y =weeknum, fill = sentiment))+ 
   geom_tile(color = "#323232")+ # makes the lines a bit more muted
@@ -123,3 +129,4 @@ ggplot(trump_month, aes(x= weekday, y =weeknum, fill = sentiment))+
        subtitle = "A Sentiment Analysis of President Trump's Tweets",
        caption = "Darker Green = More Positive\nDarker Red = More Negative")
 ```
+And there you have it! A heatmap calendar that shows the sentiment of Trump's tweets!
