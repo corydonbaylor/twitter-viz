@@ -67,4 +67,18 @@ Next, using dplyr we will remove "stop words". Stop words are words with very li
 ```
 trump_text%>%anti_join(stop_words)
 ```
-
+Next, we find the sentiments of the remaining words. Again, using the tidyverse way, we can do a left join on a sentiment dictionary to get different sentiment scores. Tidytext makes this easy. Just use the below command:
+```
+trump_text%>%anti_join(stop_words)%>% #removes common words (stop words)
+  left_join(get_sentiments("afinn"))
+```
+Finally, we are going to group back up to the tweet level using the line number that we created earlier, and join back to the original dataset. The whole process looks like this:
+```
+trump_sent = trump_text%>%anti_join(stop_words)%>% #removes common words (stop words)
+  left_join(get_sentiments("afinn")) %>% # gets sentiment score based on afinn dictionary
+  group_by(linenumber) %>% 
+  summarise(sentiment = sum(value, na.rm = T)) %>% # sums up the sentment to the tweet level 
+  right_join(., trumps, by = "linenumber")%>% # joins back to the original dataset with the sentiment score
+  mutate(date = substr(created_at, 1,10))
+ ```
+ And with that we now have the sentiment score for each of Trumps tweets!
