@@ -7,6 +7,8 @@ The Happy Days theme song, while wonderful, does not answer the important questi
 Enter R and the rtweets and tidytext packages. For this project, I am going to first scrape twitter data using the rtweets and then perform a basic sentiment analysis using the tidytext package. 
 
 Let's take a look a the final product:
+
+
 ![alt text](https://github.com/corydonbaylor/twitter-viz/blob/master/Rplot.png?raw=true)
 
 
