@@ -1,19 +1,19 @@
 # twitter-viz
 
-Monday, Tuesday, Happy Days! Thursday, Friday, Happy Days! Saturday, Sunday, Happy Days!
+Monday, Tuesday, Happy Days! Thursday, Friday, Happy Days! etc etc
 
-The Happy Days theme song, while wonderful, does not answer the important question of how do we actual measure these "happy days". What the Fonz will not tell you--dont even bother asking!--is that there is a programtic way to measure such a thing. 
+The Happy Days theme song, while wonderful, does not answer the important question of how do we actual measure these "happy days". What the Fonz will not tell you is that there is a programmatic way to measure such a thing. 
 
 Enter R and the rtweets and tidytext packages. For this project, I am going to first scrape twitter data using the rtweets and then perform a basic sentiment analysis using the tidytext package. 
 
-Let's take a look a the final product:
+But first, the final product:
 
 
 ![alt text](https://github.com/corydonbaylor/twitter-viz/blob/master/Rplot.png?raw=true)
 
 
 ### Scraping the data
-The rtweets package makes getting twitter data shockingly easy. Both the api call and response are largely abstracted away. All it takes is a single line of code to get a tidy dataframe of twitter data. But before we can do that, we need to set up access to use twitters API. I believe that how we do this is best captured on twitters on website rather than here. But essentially, you need a twitter account and the ability to answer a few simple questions. 
+The rtweets package makes getting twitter data shockingly easy. Both the api call and cleaning response are largely abstracted away. All it takes is a single line of code to get a tidy dataframe of twitter data. But before we can do that, we need to set up access to use twitter's API. I believe that how we do this is best captured on twitters on website rather than here. But essentially, you need a twitter account and the ability to answer a few simple questions. 
 
 Once you do get access, however, you will need to show authenticate your api call using the keys from your access. For rtweets, this should be as simple as plugging them into the correct arguement:
 ```
@@ -32,9 +32,9 @@ twitter_token <- create_token(
 ```
 If you are working with git, I would suggest saving your keys in a seperate file and putting that in a gitignore so that you aren't sharing this information with everyone when you share your code.
 
-Once you have authorized yourself, getting the actual data will be very simple. You can look up tweets by subject or by hashtag amoung a large list of other things, but I wanted to see how happy the days were for a particular user. 
+Once you have authorized yourself, getting the actual data will be very simple. You can look up tweets by subject or by hashtag among a large list of other things, but I wanted to see how happy the days were for a particular user. 
 
-I needed someone who tweets at least once a day but no more than ten times a day. Someone who has expressive but simple tweets that would be easy to analyze with an algorithm. I wanted someone well known with tweets that we interesting to read. I tried Kayne West and Antonio Brown--both of whom were well known for social media miscues, but they did not tweet enough. I tried a few presidential candidates, but their tweets appear to be managed by teams and are not expressive and interesting to read. 
+To do this, I needed someone who tweets at least once a day but no more than ten times a day (due to the limit on the number of tweets I can pull back). Someone who has expressive but simple tweets that would be easy to analyze with an algorithm. I wanted someone well known-- with tweets that we interesting to read. I tried Kayne West and Antonio Brown--both of whom were well known for social media miscues, but they did not tweet enough. I tried a few presidential candidates, but their tweets appear to be managed by teams and are not expressive and interesting to read. 
 
 Eventually I landed where I knew that I was going to land but really didnt want to land--with Donald Trump. The reason I did not want to use Trump's twitter is because I did not want this project to be viewed through a political lense, which is obviously inescapable with Trump. But do to the nature of his tweets and golden zone frequency of his tweeting, I realized that his twitter is the obvious choice for an analysis such as this. 
 
@@ -53,13 +53,13 @@ trump = get_timeline("realDonaldTrump", n=3200)
 fwrite(trump2, "trump.csv")
 ```
 ### Sentiment Analysis i.e. Counting Happy Words
-Sentiment analysis sounds very advanced, but at its heart, its really just about counting up positive and negative words and assuming a positive value means a positive sentiment. 
+Sentiment analysis sounds very advanced, but at its heart, its really just about counting up positive and negative words and assuming a net positive value means a positive sentiment. 
 
 So how do we go about doing this? Step one, as with any analysis is getting the data in the right format. We need to do something called tokenizing. Tokenizing breaks a large string--in this case a tweet-- into its essential elements--in this case words. But tokens do not need to be words. They can be words, phrases, or even whole sentences. But for now, lets stick with words. 
 
 We are going to be using the tidytext package for sentiment analysis. I think its easier to work in dataframes instead of corpuses like "tm" does. Tidytext fits in nicely with other tidyverse packages making it a no brainer for me.
 
-One more thing to note. We need to keep track of what tweet each token belongs to, that way we can get the sentiment for the tweet overall. 
+One more thing to note. We need to keep track of what tweet each token belongs to, that way we can get the sentiment for the tweet overall. We will create a linenumber variable to do this.
 ```
 # we need to tokenize the text (make each line a word while retaining which tweet it comes from)
 trump_text = trumps%>%select(text)%>%
@@ -90,11 +90,11 @@ trump_sent = trump_text%>%anti_join(stop_words)%>% #removes common words (stop w
  And with that we now have the sentiment score for each of Trumps tweets!
 
 ### Making a heatmap calendar
-I wanted to make a somewhat obscure visualization for this dataset. Its time series data techinically but I didn't want a line graph because those can be a bit boring. Instead, I wanted a cleaner version of the little heatmap that shows up for commits under github. 
+I wanted to make a somewhat obscure visualization for this dataset. Its time series data technically but I didn't want a line graph because those can be a bit boring. Instead, I wanted a cleaner version of the little heatmap that shows up for commits under github. 
 
-To do this, I used the geom_tile from ggplot2. The rows would be weeks and the columns would be the day of the week--just like any other calendar. Doing this was a little harder than I orginally imagined, though as always with coding once you have the actual code it looks quite easy. Using lubridate, you can get the day of the week using the "wday()" command. And you can get the week number--ie how many weeks have passed this year--using the "isoweek()" command. 
+To do this, I used the geom_tile from ggplot2. The rows would be weeks and the columns would be the day of the week--just like any other calendar. Doing this was a little harder than I orginally imagined, though as always with coding, once you have the actual code it looks quite easy. Using lubridate, you can get the day of the week using the "wday()" command. And you can get the week number--ie how many weeks have passed this year--using the "isoweek()" command. 
 
-The issue is that isoweeks start on Monday not Sunday, so you will have to use an ifelse statement to move Sundays up a week. The last issue with this is geom_tile will display the earlier weeks at the bottom of the plot--as one would expect with a bar graph--instead of at the top--as one would expect with a calendar. So you will need to set the weeks as reverse the weeks and set them as an ordered factor. Take a look at the code below:
+The issue is that isoweeks start on Monday not Sunday, so you will have to use an ifelse statement to move Sundays up a week. Also geom_tile will display the earlier weeks at the bottom of the plot--as one would expect with a bar graph--instead of at the top--as one would expect with a calendar. So you will need to set the weeks as reverse the weeks and set them as an ordered factor. Take a look at the code below:
 ```
 trump_month = trump_sent%>%group_by(date)%>%
   summarise(sentiment = sum(sentiment, na.rm =T))%>%
@@ -108,7 +108,7 @@ trump_month = trump_sent%>%group_by(date)%>%
   mutate(weeknum = factor(weeknum, rev(unique(weeknum)), ordered = T) # we want the earlier weeks at the top of the calendar
 )
 ```
-Finally we just need to make the actual visualization. This is the easy part (thankfully). All we are going here is setting the x and y for tiles, adding text (the date) to appear within the tiles and removing extra things like gridlines and the legend. 
+Finally we just need to make the actual visualization. This is the easy part (thankfully). All we are going here is setting the x and y for tiles, adding text (for the date) to appear within the tiles and removing extra things like gridlines and the legend. 
 
 One little trick, that I didn't think was readily apparent, was to use scale_fill_gradient2 to make a diverging color scale centered around 0. Other than that, the inline comments should provide enough context to what was going on here.  
 ```
