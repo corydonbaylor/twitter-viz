@@ -12,7 +12,7 @@ But first, the final product:
 ![alt text](https://github.com/corydonbaylor/twitter-viz/blob/master/Rplot.png?raw=true)
 
 
-### Scraping the data
+### Scraping the Data
 The rtweets package makes getting twitter data shockingly easy. Both the api call and cleaning response are largely abstracted away. All it takes is a single line of code to get a tidy dataframe of twitter data. But before we can do that, we need to set up access to use twitter's API. I believe that how we do this is best captured on twitters on website rather than here. But essentially, you need a twitter account and the ability to answer a few simple questions. 
 
 Once you do get access, however, you will need to show authenticate your api call using the keys from your access. For rtweets, this should be as simple as plugging them into the correct arguement:
@@ -89,7 +89,7 @@ trump_sent = trump_text%>%anti_join(stop_words)%>% #removes common words (stop w
  ```
  And with that we now have the sentiment score for each of Trumps tweets!
 
-### Making a heatmap calendar
+### Making a Heatmap Calendar
 I wanted to make a somewhat obscure visualization for this dataset. Its time series data technically but I didn't want a line graph because those can be a bit boring. Instead, I wanted a cleaner version of the little heatmap that shows up for commits under github. 
 
 To do this, I used the geom_tile from ggplot2. The rows would be weeks and the columns would be the day of the week--just like any other calendar. Doing this was a little harder than I orginally imagined, though as always with coding, once you have the actual code it looks quite easy. Using lubridate, you can get the day of the week using the "wday()" command. And you can get the week number--ie how many weeks have passed this year--using the "isoweek()" command. 
